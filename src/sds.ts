@@ -170,6 +170,7 @@ export enum Operation {
     COMOperation = 199,
     ChangePrincipal = 203,
     SrvGui = 209,
+    PDToolsDebugger = 248,
 }
 
 export enum COMOperation {
@@ -191,7 +192,9 @@ export enum ParameterName {
     User = 21,
     Password = 22,
     Last = 25,
+    FilterExpr = 31,
     UserId = 40,
+    FullName = 45,
     Parameter = 48,
     ParameterPDO = 49,
     Conversion = 51,
@@ -345,6 +348,30 @@ export class Message {
         if (parametersPDO && parametersPDO.length) {
             msg.addStringList(ParameterName.ParameterPDO, parametersPDO);
         }
+        return msg;
+    }
+
+    /**
+     *  Create a "pauseNextScript" message
+     *
+     * @param {string|string[]} scriptName: The name of the script you want to stop
+     * @param {string} pattern: This needs to match the source you want to debug
+     * @param {number} clientId: The client id of the scripts you want to debug
+     */
+    public static pauseNextScript(scriptName?: string | string[], pattern?: string, clientId?: number): Message {
+        const msg = new Message();
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDToolsDebugger]);
+        if (scriptName) {
+            if (typeof scriptName === "string") {
+                msg.addStringList(ParameterName.FullName, [scriptName]);
+            } else {
+                msg.addStringList(ParameterName.FullName, scriptName);
+            }
+        }
+        if (pattern) {
+            msg.addString(ParameterName.FilterExpr, pattern);
+        }
+        if (clientId) { msg.addInt32(ParameterName.ClientId, clientId); }
         return msg;
     }
 
